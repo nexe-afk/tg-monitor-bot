@@ -1,0 +1,27 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+data/bot.db
+data/media/
+data/logs/
+*.db-wal
+*.db-shm
+._*
+.DS_Store
+
+# TG 登录 session（含私钥，绝不能提交）
+.tg_*.session
+.tg_*.session-journal
+.tg_session
+.tg_dev
+.tg_monitor
+.tg_user
+
+# bot token（密钥）
+config/tg_bots.yaml
+
+# 临时文件
+.auth_code
+logs/*.log

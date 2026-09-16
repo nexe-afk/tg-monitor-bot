@@ -1,0 +1,25 @@
+# ============================================================
+# TG 监控机器人 - 主配置
+# ============================================================
+
+bot:
+  token: "${TG_BOT_TOKEN}"          # Telegram Bot Token（从 @BotFather 获取）
+  monitor_groups: []                 # 空列表 = 监听所有群；填 chat_id 则只监听指定群
+  monitor_private: true              # 是否监听私聊消息
+  reply_in_chat: true                # AI 回复是否直接回发到 TG 聊天
+  admins: []                         # 管理员 user_id 列表（预留，可用于 /stats 等管理命令）
+
+database:
+  path: "./data/messages.db"         # SQLite 数据库路径
+
+feishu:
+  enabled: true                      # 是否启用飞书推送（App API 或 Webhook 任一可用即生效）
+  webhook_url: ""                    # 飞书群机器人 Webhook 地址（留空则走 App API）
+  push_ai_reply: false               # 是否同时推送 AI 回复到飞书
+  app_id: "${FEISHU_APP_ID}"        # App API 方式（方案 B 主通道）
+  app_secret: "${FEISHU_APP_SECRET}"
+  chat_id: "${FEISHU_CHAT_ID}"       # 目标群 chat_id（oc_ 开头）
+
+logging:
+  level: "INFO"                      # DEBUG / INFO / WARNING / ERROR
+  dir: "./logs"                      # 日志文件目录

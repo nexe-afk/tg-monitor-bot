@@ -1,0 +1,80 @@
+# ============================================================
+# AI Agent 配置
+# ============================================================
+# 每个 agent 需 name + provider；api_key 可在 .env 中配置，此处用 ${ENV_VAR} 引用。
+#
+# supported providers:
+#   openai                - OpenAI 直连（GPT-4o / GPT-4 等）
+#   openai_compatible     - OpenAI 兼容接口（DeepSeek / 通义 / 本地 Ollama 等）
+#   anthropic             - Anthropic Messages API（Claude）
+#   google                - Google Gemini generateContent
+# ============================================================
+
+agents:
+  - name: "gpt4"
+    enabled: false
+    provider: "openai"
+    api_base: "https://api.openai.com/v1"
+    api_key: "${OPENAI_API_KEY}"
+    model: "gpt-4o"
+    max_tokens: 2000
+    temperature: 0.7
+
+  - name: "claude"
+    enabled: false
+    provider: "anthropic"
+    api_key: "${ANTHROPIC_API_KEY}"
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 2000
+    temperature: 0.7
+
+  - name: "deepseek"
+    enabled: true
+    provider: "openai_compatible"
+    api_base: "https://api.deepseek.com"
+    api_key: "${DEEPSEEK_API_KEY}"
+    model: "deepseek-chat"
+    max_tokens: 2000
+    temperature: 0.7
+
+  - name: "gemini"
+    enabled: true
+    provider: "openai_compatible"
+    api_base: "https://api.siliconflow.cn/v1"
+    api_key: "${SILICONFLOW_API_KEY}"
+    model: "deepseek-ai/DeepSeek-V4-Flash"
+    max_tokens: 2000
+    temperature: 0.7
+
+  - name: "local"
+    enabled: false
+    provider: "openai_compatible"
+    api_base: "http://localhost:11434/v1"
+    api_key: ""
+    model: "qwen2:7b"
+    max_tokens: 1000
+    temperature: 0.5
+
+# ============================================================
+# 消息路由规则（按顺序匹配，先命中即用对应 agent）
+# match 支持: chat_type / chat_ids / keywords
+# ============================================================
+
+routing:
+  default_agent: "deepseek"
+
+  rules:
+    - name: "私聊 GPT"
+      match:
+        chat_type: "private"
+      agent: "deepseek"
+
+    - name: "关键词 Claude（代码分析）"
+      match:
+        keywords: ["分析", "代码", "review", "refactor"]
+      agent: "claude"
+
+    - name: "特定群用本地模型"
+      match:
+        chat_ids: []            # 填入群 chat_id
+      agent: "local"

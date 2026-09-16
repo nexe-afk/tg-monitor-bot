@@ -1,0 +1,27 @@
+# ============================================================
+# 关键词触发规则
+# ============================================================
+# action 类型:
+#   ai_reply     - 触发指定 AI 生成回复并回发到聊天
+#   feishu_alert - 直接推送告警到飞书（不触发 AI 回复）
+#
+# priority: high > normal > low（命中多条规则时按优先级执行）
+# ============================================================
+
+rules:
+  - name: "价格咨询"
+    keywords: ["价格", "price", "多少钱", "报价", "费用"]
+    action: "ai_reply"
+    agent: "gpt4"
+    priority: "normal"
+    response_template: "关于 {query} 的价格信息："
+
+  - name: "紧急告警"
+    keywords: ["紧急", "urgent", "故障", "宕机", "挂了", "崩了"]
+    action: "feishu_alert"
+    priority: "high"
+
+  - name: "运维故障"
+    keywords: ["500", "error", "异常", "报错", "超时"]
+    action: "feishu_alert"
+    priority: "high"
