@@ -90,3 +90,58 @@ python scripts/start_all_bots.py --dry-run      # 预览启动计划
 - `ARCHITECTURE.md` —— 架构文档
 - `FEISHU_RESEARCH.md` —— 飞书方案调研（决定 webhook 或 App API）
 - 飞书 App API 方式（`FeishuNotifier._get_tenant_access_token` / `send_via_api` 已预留）
+
+---
+
+## 监听面板（listener_panel）
+
+独立 Web 面板，管理关键词监听 + 进群邀请动作链，通过 `start.py` 一键启动。
+
+### 功能
+
+- **关键词管理**：添加 / 启用 / 停用 / 删除监听关键词
+- **进群邀请**：配置目标群链接，命中后私信发送者自动进群
+- **命中记录**：实时查看命中日志，含私信 / 通知 / 报备状态
+- **多群监听**：同时监听极搜群 + 多个互动群
+- **动作链**：私信邀请 → 通知主管 @zhuguan_bot → 报备 @wyyu39433
+
+### 启动
+
+```bash
+cd /Volumes/PortableSSD/源码/任务3
+source .venv/bin/activate
+python start.py              # 前台运行
+# 或
+nohup python start.py > logs/listener_panel.log 2>&1 &   # 后台运行
+```
+
+面板地址：**http://127.0.0.1:8790**
+
+### 使用说明
+
+📄 **飞书文档**：[TG 监听面板使用说明](https://jcn16nd0x6pf.feishu.cn/docx/VNi5d0g6Yo03x0xAuFrcC2wbndb)
+
+### 监听群列表
+
+| 群 ID | 群名 |
+|---|---|
+| -1003744936498 | 极搜群 @jisou88868 |
+| 1358827239 | 赚钱项目交流社区 |
+| 2213630238 | 华人出海赚钱项目交流群 |
+| 2169942996 | 赚钱兼职副业项目交流群 |
+| 2038739886 | 泰国华人圈 |
+| 3808996051 | 李逍遥的朋友圈 |
+| 3789674164 | 云浮肇庆江门狼队 |
+
+### 目录结构
+
+```
+listener_panel/
+├── __init__.py       # MONITOR_RUNNING 标记
+├── app.py            # Flask Web 应用 + REST API
+├── db.py             # SQLite 数据库（同步 WAL）
+├── monitor.py        # Telethon 监听器 + 动作链
+├── config.yaml       # 配置文件
+└── templates/
+    └── index.html    # Web 面板前端
+```
