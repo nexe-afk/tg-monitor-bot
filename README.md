@@ -27,6 +27,18 @@ vim config/settings.yaml    # 按需调整监听范围 / 飞书开关
 python -m src.main
 ```
 
+### 多 bot 一键启动（10 个监听机器人）
+
+`config/tg_bots.yaml` 存放各监听 bot 的 token（由 `scripts/auto_read_tokens.py` 从 BotFather 自动读取），执行：
+
+```bash
+python scripts/start_all_bots.py                # 启动全部
+python scripts/start_all_bots.py --bot tgmon_01_bot   # 只启动指定一个
+python scripts/start_all_bots.py --dry-run      # 预览启动计划
+```
+
+每个 bot 独立子进程运行，共享 `settings.yaml`，日志按 bot 名分开（`logs/tgmon_01_bot.log`）。`Ctrl+C` 优雅终止全部。
+
 ## 目录结构
 
 ```
