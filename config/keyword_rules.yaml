@@ -25,3 +25,8 @@ rules:
     keywords: ["500", "error", "异常", "报错", "超时"]
     action: "feishu_alert"
     priority: "high"
+
+  - name: "报备记录"
+    keywords: ["报备", "打卡", "签到", "checkin"]
+    action: "baobei"
+    priority: "normal"

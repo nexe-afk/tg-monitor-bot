@@ -84,7 +84,8 @@ class TgMonitorBot:
                     if reply is None:
                         reply = await self.router.route_message(record, force_agent=rule.agent)
                         record.ai_response = reply
-                # 其他 action 可扩展
+                elif rule.action == "baobei":
+                    await self._handle_baobei(record)
 
         # 2. 无关键词命中 -> 默认 AI 路由
         if reply is None and not matched_rules:
@@ -110,6 +111,22 @@ class TgMonitorBot:
         )
         ok = await self.feishu.push_alert(rule_name, content)
         logger.info("关键词告警 %s -> 飞书 %s", rule_name, "成功" if ok else "跳过/失败")
+
+    async def _handle_baobei(self, record: MessageRecord) -> None:
+        """记录报备。触发词：报备 / 打卡 / 签到 / checkin。"""
+        try:
+            from datetime import datetime, timezone
+            ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            await self.db.insert_baobei(
+                chat_id=record.chat_id,
+                user_id=record.user_id,
+                username=record.username,
+                content=record.content or "",
+                timestamp=ts,
+            )
+            logger.info("报备已记录 chat=%s user=%s", record.chat_id, record.username)
+        except Exception:
+            logger.exception("报备记录失败")
 
     async def _handle_ai_reply(self, record: MessageRecord, message: Message) -> None:
         try:

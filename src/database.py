@@ -30,6 +30,16 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE INDEX IF NOT EXISTS idx_messages_chat ON messages (chat_id, timestamp);
 CREATE INDEX IF NOT EXISTS idx_messages_user ON messages (user_id, timestamp);
 CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages (timestamp);
+
+CREATE TABLE IF NOT EXISTS baobei (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id INTEGER NOT NULL,
+    user_id INTEGER,
+    username TEXT,
+    content TEXT,
+    timestamp TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_baobei_timestamp ON baobei (timestamp);
 """
 
 
@@ -111,6 +121,27 @@ class Database:
             )
             rows = await cur.fetchall()
             return [dict(r) for r in rows]
+
+    async def insert_baobei(self, chat_id: int, user_id, username, content: str, timestamp: str) -> int:
+        """记录一次报备，返回自增 id。"""
+        async with self._lock:
+            async with aiosqlite.connect(self.db_path) as db:
+                cur = await db.execute(
+                    """
+                    INSERT INTO baobei (chat_id, user_id, username, content, timestamp)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (chat_id, user_id, username, content, timestamp),
+                )
+                await db.commit()
+                return int(cur.lastrowid)
+
+    async def count_baobei(self) -> int:
+        """报备总次数。"""
+        async with aiosqlite.connect(self.db_path) as db:
+            cur = await db.execute("SELECT COUNT(*) FROM baobei")
+            row = await cur.fetchone()
+            return int(row[0]) if row else 0
 
     # ---------- 统计 ----------
 

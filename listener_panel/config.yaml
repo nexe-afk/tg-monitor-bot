@@ -1,0 +1,41 @@
+listen:
+  target_chats:
+  - id: -1003744936498
+    name: 极搜群
+  session: .tg_user
+  me_report_id: 8486195534
+actions:
+  send_invite_to_sender: true
+  invite_link: https://t.me/+testlink
+  invite_text: '📩 你好，看到你在极搜群提到「{keyword}」
+
+    点击加入交流群：{invite_link}'
+  notify_zhuguan: true
+  zhuguan_id: 6186559198
+  zhuguan_text: '🔔 命中监听
+
+    群: {chat_name}
+
+    用户: {sender}
+
+    消息: {text}
+
+    命中词: {keyword}
+
+    请拉用户进群'
+  report_enabled: true
+  report_text: '🔔 报备 [命中]
+
+    群: {chat_name}
+
+    用户: {sender} [{sender_id}]
+
+    消息: {text}
+
+    命中词: {keyword}'
+web:
+  host: 127.0.0.1
+  port: 8790
+  panel_password: ''
+database:
+  path: ./data/monitor.db

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>监听面板 · TG Monitor</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root{
+  --blue:#409EFF; --blue-dark:#337ecc; --bg:#f0f2f5; --card:#fff;
+  --border:#e4e7ed; --text:#303133; --text-sub:#909399; --green:#67c23a;
+  --red:#f56c6c; --orange:#e6a23c;
+}
+body{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); height:100vh; display:flex; overflow:hidden; }
+aside{ width:290px; min-width:290px; background:#fff; border-right:1px solid var(--border);
+  display:flex; flex-direction:column; }
+main{ flex:1; overflow:auto; padding:16px; }
+
+.logo{ padding:18px 16px; background:var(--blue); color:#fff; display:flex; align-items:center; gap:10px; }
+.logo b{ font-size:16px; }
+.logo small{ opacity:.85; font-weight:normal; }
+.nav-title{ font-size:13px; color:var(--text-sub); padding:12px 16px 6px; letter-spacing:1px; }
+.nav-item{ padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:8px;
+  font-size:14px; color:var(--text); border-left:3px solid transparent; }
+.nav-item:hover{ background:#ecf5ff; color:var(--blue); }
+.nav-item.active{ background:#ecf5ff; color:var(--blue); border-left-color:var(--blue); font-weight:600; }
+
+.card{ background:var(--card); border:1px solid var(--border); border-radius:6px; margin-bottom:16px; }
+.card-hd{ padding:12px 16px; border-bottom:1px solid var(--border); font-size:15px; font-weight:600;
+  display:flex; justify-content:space-between; align-items:center; }
+.card-bd{ padding:16px; }
+
+.row{ display:flex; gap:8px; margin-bottom:12px; }
+input[type=text], input[type=password]{ flex:1; height:34px; padding:0 10px; border:1px solid var(--border);
+  border-radius:4px; font-size:14px; outline:none; }
+input:focus{ border-color:var(--blue); box-shadow:0 0 0 2px rgba(64,158,255,.15); }
+button{ height:34px; padding:0 14px; border:none; border-radius:4px; font-size:14px; cursor:pointer;
+  transition:background .15s; white-space:nowrap; }
+.btn-primary{ background:var(--blue); color:#fff; }
+.btn-primary:hover{ background:var(--blue-dark); }
+.btn-danger{ background:var(--red); color:#fff; }
+.btn-warn{ background:var(--orange); color:#fff; }
+.btn-plain{ background:#fff; border:1px solid var(--border); color:var(--text); }
+.btn-sm{ height:26px; padding:0 8px; font-size:12px; }
+
+.kw-item{ display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f2f2f2; }
+.kw-item:last-child{ border-bottom:none; }
+.kw-word{ flex:1; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.switch{ width:38px; height:20px; border-radius:10px; background:#dcdfe6; position:relative; cursor:pointer;
+  transition:background .2s; flex-shrink:0; }
+.switch.on{ background:var(--blue); }
+.switch::after{ content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%;
+  background:#fff; transition:left .2s; }
+.switch.on::after{ left:20px; }
+.empty{ color:var(--text-sub); font-size:13px; text-align:center; padding:14px 0; }
+
+.stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.stat{ background:var(--card); border:1px solid var(--border); border-radius:6px; padding:14px; text-align:center; }
+.stat .num{ font-size:26px; font-weight:700; color:var(--blue); }
+.stat .lbl{ font-size:12px; color:var(--text-sub); margin-top:4px; }
+.stat.done .num{ color:var(--green); }
+
+table{ width:100%; border-collapse:collapse; font-size:13px; }
+th,td{ text-align:left; padding:9px 10px; border-bottom:1px solid #f2f2f2; }
+th{ color:var(--text-sub); font-weight:600; background:#fafafa; }
+tr:hover td{ background:#f5f7fa; }
+.tag{ display:inline-block; padding:1px 8px; border-radius:3px; font-size:12px; }
+.tag.on{ background:#f0f9eb; color:var(--green); }
+.tag.off{ background:#f4f4f5; color:var(--text-sub); }
+.tag.hit{ background:#ecf5ff; color:var(--blue); }
+.badge{ width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+.badge.ok{ background:var(--green); } .badge.no{ background:#c0c4cc; }
+.mono{ font-family:Menlo,Consolas,monospace; font-size:12px; color:var(--text-sub); }
+.hidden{ display:none !important; }
+.pill-status{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--text-sub);
+  background:#f4f4f5; padding:3px 10px; border-radius:12px; }
+.pill-status.running{ color:var(--green); background:#f0f9eb; }
+.toast{ position:fixed; top:20px; right:20px; z-index:999; padding:10px 16px; border-radius:4px;
+  color:#fff; font-size:13px; opacity:0; transition:opacity .25s; pointer-events:none; }
+.toast.show{ opacity:1; }
+.toast.ok{ background:var(--green); } .toast.err{ background:var(--red); }
+.msg-text{ max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-sub); }
+</style>
+</head>
+<body>
+<!-- ============ 左侧边栏 ============ -->
+<aside>
+  <div class="logo">👂 <div><b>监听面板</b><br><small>TG Monitor · 极搜群</small></div></div>
+
+  <div class="nav-title">监听管理</div>
+  <div class="nav-item active" data-view="keywords">🔑 监听关键词</div>
+  <div class="nav-item" data-view="invite">🔗 进群邀请</div>
+  <div class="nav-item" data-view="hits">📥 命中记录</div>
+  <div class="nav-title">运行状态</div>
+  <div class="nav-item" data-view="stats">📊 统计</div>
+
+  <div style="padding:16px; margin-top:auto; border-top:1px solid var(--border);">
+    <div class="pill-status" id="listen-status"><span class="badge no" id="status-dot"></span><span id="status-text">检测中…</span></div>
+    <div style="font-size:12px; color:var(--text-sub); margin-top:8px;">
+      监听群：<span class="mono">极搜群 @jisou88868</span><br>
+      监听账号：<span class="mono">kaolf (.tg_user)</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ 右侧内容区 ============ -->
+<main>
+  <!-- 关键词视图 -->
+  <section id="view-keywords">
+    <div class="card">
+      <div class="card-hd">🔑 监听关键词 <button class="btn-primary btn-sm" onclick="refreshKeywords()">刷新</button></div>
+      <div class="card-bd">
+        <div class="row">
+          <input type="text" id="kw-input" placeholder="输入监听关键词，回车添加…"
+                 onkeydown="if(event.key==='Enter') addKeyword()">
+          <button class="btn-primary" onclick="addKeyword()">＋ 添加</button>
+        </div>
+        <div id="kw-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 邀请链接视图 -->
+  <section id="view-invite" class="hidden">
+    <div class="card">
+      <div class="card-hd">🔗 进群邀请链接</div>
+      <div class="card-bd">
+        <div class="row">
+          <input type="text" id="invite-link-input" placeholder="https://t.me/+xxxxxxxx（在 Telegram 群设置里生成）">
+        </div>
+        <div class="row" style="align-items:center;">
+          <button class="btn-primary" onclick="saveInviteLink()">保存链接</button>
+          <span style="font-size:12px; color:var(--text-sub);">
+            命中后自动私信发送者此链接，并通知主管机器人拉人进群
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd">ℹ️ 动作链说明</div>
+      <div class="card-bd" style="font-size:13px; line-height:1.9; color:var(--text);">
+        1️⃣ 用户在极搜群发消息，命中监听词 → 记录命中<br>
+        2️⃣ 私信该用户：发进群邀请链接<br>
+        3️⃣ 通知主管机器人 <span class="mono">@zhuguan_bot</span> 拉人进群<br>
+        4️⃣ 向 <span class="mono">@wyyu39433</span> 报备
+      </div>
+    </div>
+  </section>
+
+  <!-- 命中记录视图 -->
+  <section id="view-hits" class="hidden">
+    <div class="card">
+      <div class="card-hd">📥 命中记录 <button class="btn-primary btn-sm" onclick="refreshHits()">刷新</button></div>
+      <div class="card-bd">
+        <table>
+          <thead><tr><th>时间</th><th>群</th><th>发送者</th><th>消息</th><th>命中词</th><th>私信</th><th>通知</th><th>报备</th></tr></thead>
+          <tbody id="hits-body"></tbody>
+        </table>
+        <div id="hits-empty" class="empty hidden">暂无命中记录</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 统计视图 -->
+  <section id="view-stats" class="hidden">
+    <div class="stats">
+      <div class="stat"><div class="num" id="st-total">-</div><div class="lbl">总命中次数</div></div>
+      <div class="stat done"><div class="num" id="st-invited">-</div><div class="lbl">已发邀请</div></div>
+      <div class="stat"><div class="num" id="st-active">-</div><div class="lbl">启用的关键词</div></div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+
+async function api(path, method='GET', body) {
+  const opt = { method, headers: {'Content-Type':'application/json'} };
+  if (body !== undefined) opt.body = JSON.stringify(body);
+  const res = await fetch(path, opt);
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, data };
+}
+
+function toast(msg, type='ok') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ---- 视图切换 ---- */
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    const v = el.dataset.view;
+    ['keywords','invite','hits','stats'].forEach(k => {
+      $('#view-' + k).classList.toggle('hidden', k !== v);
+    });
+  });
+});
+
+/* ---- 关键词 ---- */
+async function refreshKeywords() {
+  const { ok, data } = await api('/api/keywords');
+  if (!ok) return toast('加载关键词失败', 'err');
+  const list = data.items || [];
+  const box = $('#kw-list');
+  if (!list.length) { box.innerHTML = '<div class="empty">还没有关键词，先添加一个试试</div>'; return; }
+  box.innerHTML = list.map(k => `
+    <div class="kw-item">
+      <span class="tag ${k.enabled ? 'on' : 'off'}">${k.enabled ? '监听中' : '已停用'}</span>
+      <span class="kw-word">${escapeHtml(k.keyword)}</span>
+      <button class="btn-sm ${k.enabled ? 'btn-plain' : 'btn-warn'}" onclick="toggleKeyword(${JSON.stringify(k.keyword).replace(/"/g,'&quot;')})">${k.enabled ? '停用' : '启用'}</button>
+      <button class="btn-sm btn-danger" onclick="delKeyword(${JSON.stringify(k.keyword).replace(/"/g,'&quot;')})">删除</button>
+    </div>`).join('');
+}
+
+async function addKeyword() {
+  const kw = $('#kw-input').value.trim();
+  if (!kw) return toast('请输入关键词', 'err');
+  const { ok, data } = await api('/api/keywords', 'POST', { keyword: kw });
+  if (!ok) return toast(data.error || '添加失败', 'err');
+  $('#kw-input').value = '';
+  toast(`已添加「${kw}」`);
+  refreshKeywords();
+}
+
+async function delKeyword(kw) {
+  const { ok } = await api('/api/keywords/' + encodeURIComponent(kw), 'DELETE');
+  toast(ok ? '已删除' : '删除失败', ok ? 'ok' : 'err');
+  refreshKeywords();
+}
+
+async function toggleKeyword(kw) {
+  const { data } = await api('/api/keywords');
+  const item = (data.items || []).find(k => k.keyword === kw);
+  if (!item) return;
+  await api('/api/keywords/' + encodeURIComponent(kw) + '/toggle', 'POST', { enabled: !item.enabled });
+  refreshKeywords();
+}
+
+/* ---- 邀请链接 ---- */
+async function loadInviteLink() {
+  const { ok, data } = await api('/api/config');
+  if (!ok) return;
+  $('#invite-link-input').value = (data.config && data.config.invite_link) || '';
+}
+
+async function saveInviteLink() {
+  const link = $('#invite-link-input').value.trim();
+  const { ok } = await api('/api/config', 'POST', { invite_link: link });
+  toast(ok ? '已保存' : '保存失败', ok ? 'ok' : 'err');
+}
+
+/* ---- 命中记录 ---- */
+function fmtTs(ts) {
+  if (!ts) return '-';
+  const d = new Date(ts * 1000);
+  const p = n => String(n).padStart(2, '0');
+  return `${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+async function refreshHits() {
+  const { ok, data } = await api('/api/hits?limit=200');
+  if (!ok) return toast('加载命中记录失败', 'err');
+  const items = data.items || [];
+  $('#hits-empty').classList.toggle('hidden', items.length > 0);
+  $('#hits-body').innerHTML = items.map(h => `
+    <tr>
+      <td class="mono">${fmtTs(h.created_at)}</td>
+      <td>${escapeHtml(h.chat_name || '-')}</td>
+      <td>${escapeHtml(h.sender_name || h.sender_id)}</td>
+      <td class="msg-text" title="${escapeHtml(h.text || '')}">${escapeHtml(h.text || '-')}</td>
+      <td><span class="tag hit">${escapeHtml(h.keyword)}</span></td>
+      <td>${h.invited ? '<span class="badge ok"></span>已发' : '<span class="badge no"></span>未发'}</td>
+      <td>${h.notified ? '<span class="badge ok"></span>已通知' : '<span class="badge no"></span>未通知'}</td>
+      <td>${h.reported ? '<span class="badge ok"></span>已报备' : '<span class="badge no"></span>未报备'}</td>
+    </tr>`).join('');
+}
+
+/* ---- 统计 + 状态 ---- */
+async function refreshStats() {
+  const { ok, data } = await api('/api/stats');
+  if (!ok) return;
+  $('#st-total').textContent = data.total_hits ?? '-';
+  $('#st-invited').textContent = data.invited ?? '-';
+  $('#st-active').textContent = data.active_keywords ?? '-';
+}
+
+async function refreshStatus() {
+  const { ok, data } = await api('/api/health');
+  const running = ok && data.listening;
+  $('#status-dot').className = 'badge ' + (running ? 'ok' : 'no');
+  $('#listen-status').classList.toggle('running', running);
+  $('#status-text').textContent = running ? '监听运行中' : '监听未启动';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+refreshKeywords();
+loadInviteLink();
+refreshHits();
+refreshStats();
+refreshStatus();
+setInterval(() => { refreshHits(); refreshStats(); refreshStatus(); }, 8000);
+</script>
+</body>
+</html>
