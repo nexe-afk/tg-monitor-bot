@@ -3,9 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 .env
-data/bot.db
-data/media/
-data/logs/
+data/
 *.db-wal
 *.db-shm
 ._*
