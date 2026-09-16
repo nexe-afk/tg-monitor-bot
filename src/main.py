@@ -181,6 +181,7 @@ def main() -> None:
     setup_logging(
         level=logging_cfg.get("level", "INFO"),
         log_dir=logging_cfg.get("dir", "./logs"),
+        name=os.getenv("BOT_NAME", "bot"),  # 多实例部署时每个 bot 独立日志文件
     )
 
     try:
