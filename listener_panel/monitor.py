@@ -27,6 +27,15 @@ load_dotenv(BASE_DIR / ".env")
 logger = logging.getLogger("listener_monitor")
 
 
+def _reload_actions() -> dict:
+    """每次命中动作前重读 config.yaml，面板上改的邀请链接即时生效。"""
+    try:
+        cfg = yaml.safe_load((PANEL_DIR / "config.yaml").read_text(encoding="utf-8")) or {}
+        return cfg.get("actions", {}) or {}
+    except Exception:
+        return {}
+
+
 class ListenerMonitor:
     def __init__(self, db: MonitorDB, cfg: dict):
         self.db = db
@@ -93,7 +102,7 @@ class ListenerMonitor:
         await self._action_report(hit_id, chat_name, sender_name, text, hit)
 
     async def _action_invite(self, hit_id, event, sender, chat_name, sender_name, text, hit) -> None:
-        act = self.cfg.get("actions", {})
+        act = _reload_actions()
         if not act.get("send_invite_to_sender"):
             return
         invite_link = act.get("invite_link", "") or ""
@@ -110,7 +119,7 @@ class ListenerMonitor:
             logger.warning("  私信进群链接失败: %s", e)
 
     async def _action_notify_zhuguan(self, hit_id, chat_name, sender_name, text, hit) -> None:
-        act = self.cfg.get("actions", {})
+        act = _reload_actions()
         if not act.get("notify_zhuguan"):
             return
         zid = act.get("zhuguan_id")
@@ -127,7 +136,7 @@ class ListenerMonitor:
             logger.warning("  通知主管失败: %s", e)
 
     async def _action_report(self, hit_id, chat_name, sender_name, text, hit) -> None:
-        act = self.cfg.get("actions", {})
+        act = _reload_actions()
         if not act.get("report_enabled"):
             return
         rid = self.cfg.get("listen", {}).get("me_report_id")

@@ -127,12 +127,12 @@ tr:hover td{ background:#f5f7fa; }
       <div class="card-hd">🔗 进群邀请链接</div>
       <div class="card-bd">
         <div class="row">
-          <input type="text" id="invite-link-input" placeholder="https://t.me/+xxxxxxxx（在 Telegram 群设置里生成）">
+          <input type="text" id="invite-link-input" placeholder="填你指定的目标群链接，如 https://t.me/+xxxxxxxx 或 https://t.me/群username">
         </div>
         <div class="row" style="align-items:center;">
           <button class="btn-primary" onclick="saveInviteLink()">保存链接</button>
           <span style="font-size:12px; color:var(--text-sub);">
-            命中后自动私信发送者此链接，并通知主管机器人拉人进群
+            命中用户收到此链接，点击自动进你的目标群
           </span>
         </div>
       </div>
@@ -140,9 +140,10 @@ tr:hover td{ background:#f5f7fa; }
     <div class="card">
       <div class="card-hd">ℹ️ 动作链说明</div>
       <div class="card-bd" style="font-size:13px; line-height:1.9; color:var(--text);">
+        监听源：<span class="mono">极搜群 @jisou88868</span> 👉 命中即拉人进 <b>你指定的目标群</b><br>
         1️⃣ 用户在极搜群发消息，命中监听词 → 记录命中<br>
-        2️⃣ 私信该用户：发进群邀请链接<br>
-        3️⃣ 通知主管机器人 <span class="mono">@zhuguan_bot</span> 拉人进群<br>
+        2️⃣ 私信该用户：发你目标群的进群链接（对方点击即进群）<br>
+        3️⃣ 通知主管机器人 <span class="mono">@zhuguan_bot</span> 已命中已邀<br>
         4️⃣ 向 <span class="mono">@wyyu39433</span> 报备
       </div>
     </div>

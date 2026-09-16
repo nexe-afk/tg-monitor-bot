@@ -6,7 +6,7 @@ listen:
   me_report_id: 8486195534
 actions:
   send_invite_to_sender: true
-  invite_link: https://t.me/+testlink
+  invite_link: ''
   invite_text: '📩 你好，看到你在极搜群提到「{keyword}」
 
     点击加入交流群：{invite_link}'
@@ -22,7 +22,7 @@ actions:
 
     命中词: {keyword}
 
-    请拉用户进群'
+    已私信发送者进群链接，对方点击即进群'
   report_enabled: true
   report_text: '🔔 报备 [命中]
 
